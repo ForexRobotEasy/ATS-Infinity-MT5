@@ -1,0 +1,69 @@
+
+// ATS Infinity MT5
+// Developed by Forex Robot Easy Team
+// Website: forexroboteasy.com
+
+// Include necessary libraries
+#include <Trade/Trade.mqh>
+#include <Math/Math.mqh>
+
+// Define constants
+#define SYMBOL 'EURUSD'
+#define LOT_SIZE 0.01
+#define STOP_LOSS 50
+#define TAKE_PROFIT 100
+
+// Initialize trade object
+CTrade trade;
+
+// Define function to open pending orders
+void OpenPendingOrders()
+{
+   double currentPrice = SymbolInfoDouble(SYMBOL, SYMBOL_BID);
+
+   // Calculate buy stop and sell stop levels
+   double buyStopLevel = currentPrice + 10 * SymbolInfoDouble(SYMBOL, SYMBOL_POINT);
+   double sellStopLevel = currentPrice - 10 * SymbolInfoDouble(SYMBOL, SYMBOL_POINT);
+
+   // Open buy stop pending order
+   trade.BuyStop(LOT_SIZE, buyStopLevel, currentPrice - STOP_LOSS * SymbolInfoDouble(SYMBOL, SYMBOL_POINT), currentPrice + TAKE_PROFIT * SymbolInfoDouble(SYMBOL, SYMBOL_POINT), 'Buy Stop');
+
+   // Open sell stop pending order
+   trade.SellStop(LOT_SIZE, sellStopLevel, currentPrice + STOP_LOSS * SymbolInfoDouble(SYMBOL, SYMBOL_POINT), currentPrice - TAKE_PROFIT * SymbolInfoDouble(SYMBOL, SYMBOL_POINT), 'Sell Stop');
+}
+
+// Define function to check for significant price movements
+bool IsSignificantMovement()
+{
+   double currentPrice = SymbolInfoDouble(SYMBOL, SYMBOL_BID);
+   double previousPrice = SymbolInfoDouble(SYMBOL, SYMBOL_CLOSE, 1);
+
+   // Calculate price change percentage
+   double priceChangePercentage = MathAbs(currentPrice - previousPrice) / previousPrice * 100;
+
+   // Check if price change is significant
+   if (priceChangePercentage >= 1)
+   {
+      return true;
+   }
+
+   return false;
+}
+
+// Define function to execute trading logic
+void ExecuteTradingLogic()
+{
+   // Check for significant price movements
+   if (IsSignificantMovement())
+   {
+      // Open pending orders
+      OpenPendingOrders();
+   }
+}
+
+// Initialize expert advisor
+void OnTick()
+{
+   // Execute trading logic
+   ExecuteTradingLogic();
+}
